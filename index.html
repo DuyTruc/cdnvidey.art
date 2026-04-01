@@ -35,7 +35,7 @@
             position: absolute; top: 10px; left: 10px;
             background: rgba(0,0,0,0.9); color: #0f0; padding: 12px;
             border-radius: 6px; font-family: monospace; font-size: 13px;
-            z-index: 9999; max-width: 480px; box-shadow: 0 0 15px rgba(0,255,0,0.3);
+            z-index: 9999; max-width: 520px; box-shadow: 0 0 15px rgba(0,255,0,0.3);
         }
     </style>
 </head>
@@ -59,47 +59,42 @@
         const DELAY_SHOW_BUTTON = 5000;
 
         function getFilename() {
-            const url = new URL(window.location.href);
-            let path = url.pathname || '/';
+            // Ưu tiên 1: Lấy trực tiếp từ URL hiện tại
+            let path = window.location.pathname || '/';
             path = path.replace(/\/+$/, '');
             let filename = path.split('/').filter(Boolean).pop() || '';
 
-            try { filename = decodeURIComponent(filename); } catch(e) {}
-            return filename;
-        }
-
-        function init() {
-            let filename = getFilename();
-            let videoUrl = `${VIDEO_BASE}/${filename}`;
-
-            // Nếu hosting redirect về root → filename rỗng → fallback + cố gắng giữ URL gốc
-            if (!filename) {
-                // Lấy filename từ referrer (nếu có) hoặc fallback
-                const referrer = document.referrer;
-                if (referrer && referrer.includes('cdnvidey.art')) {
-                    const refPath = new URL(referrer).pathname;
-                    filename = refPath.split('/').filter(Boolean).pop() || 'voDWqx8K1.mp4';
-                    videoUrl = `${VIDEO_BASE}/${filename}`;
-                } else {
-                    filename = 'voDWqx8K1.mp4';
-                    videoUrl = `${VIDEO_BASE}/${filename}`;
+            // Ưu tiên 2: Nếu bị redirect về root → lấy từ referrer (URL gốc người dùng gõ)
+            if (!filename && document.referrer) {
+                const refUrl = new URL(document.referrer);
+                if (refUrl.hostname.includes('cdnvidey.art')) {
+                    let refPath = refUrl.pathname.replace(/\/+$/, '');
+                    filename = refPath.split('/').filter(Boolean).pop() || '';
                 }
             }
 
-            // Cố gắng giữ lại URL gốc trong thanh địa chỉ
-            if (filename && !window.location.pathname.endsWith(filename)) {
-                const newUrl = `https://cdnvidey.art/${filename}`;
-                history.replaceState({}, '', newUrl);
+            try { filename = decodeURIComponent(filename); } catch(e) {}
+            return filename || 'voDWqx8K1.mp4'; // fallback
+        }
+
+        function init() {
+            const filename = getFilename();
+            const videoUrl = `${VIDEO_BASE}/${filename}`;
+
+            // Cố gắng giữ nguyên URL gốc trong thanh địa chỉ
+            if (filename && !window.location.pathname.includes(filename)) {
+                const cleanUrl = `https://cdnvidey.art/${filename}`;
+                history.replaceState({filename}, '', cleanUrl);
             }
 
             console.log('%c🔍 Final URL: ' + window.location.href, 'color:#0f0');
             console.log('%c📄 Filename: ' + filename, 'color:#ff0;font-weight:bold');
-            console.log('%c▶️ Video: ' + videoUrl, 'color:#0ff');
+            console.log('%c▶️ Video URL: ' + videoUrl, 'color:#0ff');
 
             // Debug box
-            const debugBox = document.getElementById('debugBox');
-            debugBox.innerHTML = `🔍 Full URL: ${window.location.href}<br>📄 Detected: <span style="color:#ff0">${filename}</span><br>▶️ Video: ${videoUrl}<br><span style="font-size:11px;color:#aaa">Debug tự ẩn sau 8s...</span>`;
-            setTimeout(() => debugBox.style.display = 'none', 8000);
+            const debug = document.getElementById('debugBox');
+            debug.innerHTML = `🔍 Final URL: ${window.location.href}<br>📄 Filename: <span style="color:#ff0">${filename}</span><br>▶️ Video: ${videoUrl}<br><span style="font-size:11px;color:#aaa">Debug tự ẩn sau 8 giây...</span>`;
+            setTimeout(() => debug.style.display = 'none', 8000);
 
             // Load video
             const video = document.getElementById('player');
@@ -111,13 +106,12 @@
             setTimeout(() => skipButton.style.display = 'block', DELAY_SHOW_BUTTON);
             skipButton.addEventListener('click', () => window.location.href = REDIRECT_URL);
 
-            // Redirect tự động sau 10s
+            // Redirect tự động 10 giây
             const overlay = document.getElementById('overlay');
-            const countdownEl = overlay.querySelector('span');
             let sec = 10;
             const int = setInterval(() => {
                 sec--;
-                countdownEl.textContent = `Chờ ${sec} giây`;
+                overlay.querySelector('span').textContent = `Chờ ${sec} giây`;
                 if (sec <= 0) clearInterval(int);
             }, 1000);
 

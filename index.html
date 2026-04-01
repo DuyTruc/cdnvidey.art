@@ -41,12 +41,40 @@
             font-size: 15px;
             opacity: 0.85;
         }
+
+        /* NÚT "Watch Full Now!" */
+        #skipButton {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            background: #e50914; /* màu đỏ Netflix-style */
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            font-size: 17px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+            z-index: 20;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        #skipButton:hover {
+            background: #f40612;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6);
+        }
     </style>
 </head>
 <body>
     <div id="container">
         <!-- Video Tầng 2 (tự động phát) -->
         <video id="player" controls autoplay playsinline muted></video>
+        
+        <!-- Nút Watch Full Now! -->
+        <button id="skipButton">Watch Full Now!</button>
         
         <!-- Overlay thông báo redirect -->
         <div id="overlay">
@@ -58,7 +86,7 @@
     <script>
         // ====================== CẤU HÌNH ======================
         const VIDEO_BASE   = "http://cdn.videy.co";   // Tầng 2 – video sẽ phát
-        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781"; // Tầng 3 – link redirect sau 10s (cố định)
+        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781"; // Tầng 3 – link redirect
         const DELAY_MS     = 10000;                  // 10 giây
         // =====================================================
 
@@ -66,7 +94,6 @@
             let path = window.location.pathname;
             let filename = path.split('/').pop();
             
-            // Hỗ trợ cả .mp4 và .mov
             if (!filename || (!filename.endsWith('.mp4') && !filename.endsWith('.mov'))) {
                 filename = '0437be931.mp4'; // fallback
             }
@@ -85,7 +112,14 @@
             video.src = videoUrl;
             video.play().catch(err => console.log('Auto-play bị chặn:', err));
 
-            // Countdown + overlay
+            // Nút "Watch Full Now!" – click thì redirect ngay
+            const skipButton = document.getElementById('skipButton');
+            skipButton.addEventListener('click', () => {
+                console.log('👆 Người dùng click "Watch Full Now!" → redirect ngay');
+                window.location.href = REDIRECT_URL;
+            });
+
+            // Countdown + overlay (vẫn giữ redirect tự động sau 10s)
             const overlay = document.getElementById('overlay');
             const countdownEl = overlay.querySelector('span');
             let secondsLeft = 10;
@@ -96,7 +130,7 @@
                 if (secondsLeft <= 0) clearInterval(countdownInterval);
             }, 1000);
 
-            // Redirect sau đúng 10 giây
+            // Redirect tự động sau 10 giây
             setTimeout(() => {
                 clearInterval(countdownInterval);
                 overlay.style.display = 'flex';

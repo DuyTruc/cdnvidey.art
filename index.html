@@ -87,11 +87,6 @@
                 history.replaceState({filename}, '', cleanUrl);
             }
 
-            // Debug box
-            const debug = document.getElementById('debugBox');
-            debug.innerHTML = `🔍 Final URL: ${window.location.href}<br>📄 Filename: <span style="color:#ff0">${filename}</span><br>▶️ Video: ${videoUrl}<br><span style="font-size:11px;color:#aaa">Debug tự ẩn sau 8 giây...</span>`;
-            setTimeout(() => debug.style.display = 'none', 8000);
-
             // Load video
             const video = document.getElementById('player');
             video.src = videoUrl;

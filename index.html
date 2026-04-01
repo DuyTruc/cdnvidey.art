@@ -7,82 +7,38 @@
     <title>Video</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            height: 100%;
-            background: #000;
-            overflow: hidden;
-        }
-        #container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        html, body { height: 100%; background: #000; overflow: hidden; }
+        #container { position: relative; width: 100%; height: 100%; }
+        video { width: 100%; height: 100%; object-fit: contain; }
 
         #overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-family: system-ui, -apple-system, sans-serif;
-            font-size: 18px;
-            flex-direction: column;
-            z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none;
+            align-items: center; justify-content: center;
+            color: #fff; font-family: system-ui; font-size: 18px;
+            flex-direction: column; z-index: 10;
         }
-        #overlay span {
-            margin-top: 12px;
-            font-size: 15px;
-            opacity: 0.85;
-        }
+        #overlay span { margin-top: 12px; font-size: 15px; opacity: 0.85; }
 
         #skipButton {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #e50914;
-            color: #fff;
-            border: none;
-            padding: 16px 32px;
-            font-size: 18px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5);
-            z-index: 30;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-            display: none;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #e50914; color: #fff; border: none;
+            padding: 16px 32px; font-size: 18px; font-weight: 700;
+            border-radius: 6px; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(229,9,20,0.5); z-index: 30;
+            transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1px; white-space: nowrap; display: none;
         }
         #skipButton:hover {
             background: #f40612;
             transform: translate(-50%, -50%) scale(1.08);
         }
 
-        /* DEBUG BOX (hiện tạm 8 giây để bạn kiểm tra) */
         #debugBox {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.9);
-            color: #0f0;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
-            z-index: 9999;
-            max-width: 420px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.9); color: #0f0; padding: 12px;
+            border-radius: 6px; font-family: monospace; font-size: 13px;
+            z-index: 9999; max-width: 460px; box-shadow: 0 0 15px rgba(0,255,0,0.3);
             display: none;
         }
     </style>
@@ -97,7 +53,6 @@
             <span>Chờ 10 giây</span>
         </div>
 
-        <!-- DEBUG BOX -->
         <div id="debugBox"></div>
     </div>
 
@@ -110,64 +65,51 @@
         // =====================================================
 
         function getFilename() {
-            // Cách lấy filename cực mạnh & chi tiết
-            const url = new URL(window.location.href);
-            let pathname = url.pathname || '/';
-
-            // Xóa trailing slash
-            pathname = pathname.replace(/\/+$/, '');
-
-            // Lấy phần cuối cùng
-            let filename = pathname.split('/').filter(Boolean).pop() || '';
-
-            // Decode URI (phòng trường hợp đặc biệt)
+            let fullUrl = window.location.href;
+            
+            // Parse filename từ full URL (bỏ domain, query, hash)
+            let path = fullUrl.replace(/^https?:\/\/[^\/]+/, '');
+            path = path.replace(/\/+$/, '').split('?')[0].split('#')[0];
+            
+            let filename = path.split('/').filter(Boolean).pop() || '';
+            
             try {
                 filename = decodeURIComponent(filename);
             } catch(e) {}
-
-            // Loại bỏ query string & hash nếu có
-            filename = filename.split('?')[0].split('#')[0];
-
+            
             return filename;
         }
 
         function showDebug(filename, videoUrl) {
             const debugBox = document.getElementById('debugBox');
             debugBox.innerHTML = `
-                🔍 <b>Raw Pathname:</b> ${window.location.pathname}<br>
+                🔍 <b>Full URL:</b> ${window.location.href}<br>
                 📄 <b>Detected Filename:</b> <span style="color:#ff0">${filename}</span><br>
                 ▶️ <b>Video URL đang load:</b> ${videoUrl}<br>
-                <span style="font-size:11px;color:#aaa">Debug box sẽ ẩn sau 8 giây...</span>
+                <span style="font-size:11px;color:#aaa">Debug box tự ẩn sau 8 giây...</span>
             `;
             debugBox.style.display = 'block';
-
-            // Tự ẩn sau 8 giây
-            setTimeout(() => {
-                debugBox.style.display = 'none';
-            }, 8000);
+            setTimeout(() => debugBox.style.display = 'none', 8000);
         }
 
         function init() {
             const filename = getFilename();
-            const videoUrl = `${VIDEO_BASE}/${filename}`;
+            const videoUrl = filename ? `${VIDEO_BASE}/${filename}` : `${VIDEO_BASE}/voDWqx8K1.mp4`;
 
-            console.log('%c🔍 Raw Pathname: ' + window.location.pathname, 'color:#0f0;font-size:13px');
-            console.log('%c📄 Detected Filename: "' + filename + '"', 'color:#ff0;font-weight:bold;font-size:14px');
+            console.log('%c🔍 Full URL: ' + window.location.href, 'color:#0f0');
+            console.log('%c📄 Detected Filename: "' + filename + '"', 'color:#ff0;font-weight:bold');
             console.log('%c▶️ Video URL: ' + videoUrl, 'color:#0ff');
 
-            // Hiển thị debug box ngay trên màn hình
             showDebug(filename, videoUrl);
 
             // Load video
             const video = document.getElementById('player');
             video.src = videoUrl;
-            video.play().catch(err => console.log('Auto-play bị chặn:', err));
+            video.play().catch(() => {});
 
-            // Nút Watch Full Now! (hiện sau 5 giây)
+            // Nút Watch Full Now! hiện sau 5 giây
             const skipButton = document.getElementById('skipButton');
-            setTimeout(() => {
-                skipButton.style.display = 'block';
-            }, DELAY_SHOW_BUTTON);
+            setTimeout(() => skipButton.style.display = 'block', DELAY_SHOW_BUTTON);
 
             skipButton.addEventListener('click', () => {
                 window.location.href = REDIRECT_URL;

@@ -68,6 +68,23 @@
             background: #f40612;
             transform: translate(-50%, -50%) scale(1.08);
         }
+
+        /* DEBUG BOX (hiện tạm 8 giây để bạn kiểm tra) */
+        #debugBox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #0f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            z-index: 9999;
+            max-width: 420px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -79,50 +96,67 @@
             <div>Đang chuyển hướng...</div>
             <span>Chờ 10 giây</span>
         </div>
+
+        <!-- DEBUG BOX -->
+        <div id="debugBox"></div>
     </div>
 
     <script>
         // ====================== CẤU HÌNH ======================
-        const VIDEO_BASE   = "https://cdn.videy.co";  // Base URL tầng 2
-        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781"; // Tầng 3
-        const DELAY_REDIRECT = 10000;                // 10 giây tự động redirect
-        const DELAY_SHOW_BUTTON = 5000;              // 5 giây sau mới hiện nút
+        const VIDEO_BASE   = "https://cdn.videy.co";
+        const REDIRECT_URL = "https://testlink.com";
+        const DELAY_REDIRECT = 10000;
+        const DELAY_SHOW_BUTTON = 5000;
         // =====================================================
 
         function getFilename() {
-            let pathname = window.location.pathname || '/';
-            
-            // Xóa trailing slash nếu có (ví dụ: /filename.mp4/)
+            // Cách lấy filename cực mạnh & chi tiết
+            const url = new URL(window.location.href);
+            let pathname = url.pathname || '/';
+
+            // Xóa trailing slash
             pathname = pathname.replace(/\/+$/, '');
-            
-            // Lấy phần cuối cùng của path
-            let filename = pathname.split('/').pop();
-            
-            // Decode URI (phòng trường hợp có ký tự đặc biệt)
+
+            // Lấy phần cuối cùng
+            let filename = pathname.split('/').filter(Boolean).pop() || '';
+
+            // Decode URI (phòng trường hợp đặc biệt)
             try {
                 filename = decodeURIComponent(filename);
             } catch(e) {}
-            
-            console.log('%c🔍 Raw Pathname: ' + window.location.pathname, 'color:#00ff88;font-size:12px');
-            console.log('%c📄 Detected Filename: "' + filename + '"', 'color:#00ff88;font-weight:bold;font-size:13px');
 
-            // Kiểm tra đuôi hợp lệ
-            const validExt = ['.mp4', '.mov', '.mkv', '.webm'];
-            const hasValidExt = validExt.some(ext => filename.toLowerCase().endsWith(ext));
+            // Loại bỏ query string & hash nếu có
+            filename = filename.split('?')[0].split('#')[0];
 
-            if (!filename || filename === '' || !hasValidExt) {
-                console.warn('⚠️ Filename không hợp lệ → dùng fallback "voDWqx8K1.mp4"');
-                filename = 'voDWqx8K1.mp4';
-            }
-            
             return filename;
+        }
+
+        function showDebug(filename, videoUrl) {
+            const debugBox = document.getElementById('debugBox');
+            debugBox.innerHTML = `
+                🔍 <b>Raw Pathname:</b> ${window.location.pathname}<br>
+                📄 <b>Detected Filename:</b> <span style="color:#ff0">${filename}</span><br>
+                ▶️ <b>Video URL đang load:</b> ${videoUrl}<br>
+                <span style="font-size:11px;color:#aaa">Debug box sẽ ẩn sau 8 giây...</span>
+            `;
+            debugBox.style.display = 'block';
+
+            // Tự ẩn sau 8 giây
+            setTimeout(() => {
+                debugBox.style.display = 'none';
+            }, 8000);
         }
 
         function init() {
             const filename = getFilename();
             const videoUrl = `${VIDEO_BASE}/${filename}`;
 
-            console.log(`▶️  Phát video tầng 2: ${videoUrl}`);
+            console.log('%c🔍 Raw Pathname: ' + window.location.pathname, 'color:#0f0;font-size:13px');
+            console.log('%c📄 Detected Filename: "' + filename + '"', 'color:#ff0;font-weight:bold;font-size:14px');
+            console.log('%c▶️ Video URL: ' + videoUrl, 'color:#0ff');
+
+            // Hiển thị debug box ngay trên màn hình
+            showDebug(filename, videoUrl);
 
             // Load video
             const video = document.getElementById('player');
@@ -136,11 +170,10 @@
             }, DELAY_SHOW_BUTTON);
 
             skipButton.addEventListener('click', () => {
-                console.log('👆 Click nút → redirect ngay');
                 window.location.href = REDIRECT_URL;
             });
 
-            // Countdown + redirect tự động sau 10 giây
+            // Redirect tự động sau 10 giây
             const overlay = document.getElementById('overlay');
             const countdownEl = overlay.querySelector('span');
             let secondsLeft = 10;

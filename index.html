@@ -16,9 +16,9 @@
     <!-- Cloudinary sẽ tự động cắt ảnh từ video theo filename -->
     <!-- THAY YOUR_CLOUD_NAME = cloud name của bạn -->
     <script>
-        const cloudName = "YOUR_CLOUD_NAME"; // ←←← THAY VÀO ĐÂY
+        const cloudName = "c-4bc2daea0cecf5eaf6dd10c0a1a76f"; // ←←← THAY VÀO ĐÂY
         const filename = window.location.pathname.split('/').pop() || 'default.mp4';
-        const thumbnailUrl = `https://res.cloudinary.com/c-4bc2daea0cecf5eaf6dd10c0a1a76f/image/fetch/c_thumb,w_1200,h_630,g_auto,f_jpg/https://cdn.videy.co/${filename}`;
+        const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/fetch/c_thumb,w_1200,h_630,g_auto,f_jpg/https://cdn.videy.co/${filename}`;
         
         // Set dynamic meta tags
         document.querySelector('meta[property="og:image"]').setAttribute('content', thumbnailUrl);

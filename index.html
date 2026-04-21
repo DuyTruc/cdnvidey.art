@@ -1,10 +1,10 @@
 <script>
-    const VIDEO_BASE   = "https://cdn.aceimg.com";
+    const VIDEO_BASE   = "https://cdn.videy.co";          // ← ĐÃ ĐỔI THEO YÊU CẦU
     const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781";
     const DELAY_REDIRECT = 10000;
     const DELAY_SHOW_BUTTON = 5000;
 
-    // ==================== THÊM MỚI: Giá trị k bạn muốn ====================
+    // ==================== GIÁ TRỊ K BẠN MUỐN ====================
     const K_VALUE = "MTc3NjY3ODkzNnxrOXhQITI=";
 
     function getFilename() {
@@ -28,13 +28,12 @@
         const filename = getFilename();
         const videoUrl = `${VIDEO_BASE}/${filename}`;
 
-        // ====================== CLEAN URL HIỆN TẠI (code cũ) ======================
+        // ====================== CLEAN URL (giữ nguyên logic cũ) ======================
         if (filename && !window.location.pathname.includes(filename)) {
             history.replaceState({}, '', `https://cdnvidey.art/${filename}`);
         }
 
-        // ====================== TỰ ĐỘNG THÊM ?k=... (code mới) ======================
-        // Kiểm tra sau khi clean URL (nếu có)
+        // ====================== TỰ ĐỘNG THÊM ?k=... (logic mới) ======================
         let url = new URL(window.location.href);
         if (!url.searchParams.has('k')) {
             url.searchParams.set('k', K_VALUE);
@@ -47,7 +46,7 @@
         video.src = videoUrl;
         video.play().catch(() => {});
 
-        // Click video → redirect ngay
+        // ====================== CLICK VÀO VIDEO CŨNG REDIRECT NGAY (giữ nguyên) ======================
         video.addEventListener('click', (e) => {
             if (e.target.tagName === 'VIDEO') {
                 e.preventDefault();
@@ -55,17 +54,19 @@
                 window.location.href = REDIRECT_URL;
             }
         });
+        // =================================================================================
 
-        // Nút Skip
+        // Nút Watch Full Now! hiện sau 5 giây
         const skipButton = document.getElementById('skipButton');
         setTimeout(() => skipButton.style.display = 'block', DELAY_SHOW_BUTTON);
 
+        // Click nút Skip
         skipButton.addEventListener('click', (e) => {
             e.stopImmediatePropagation();
             window.location.href = REDIRECT_URL;
         });
 
-        // Click ngoài video/nút cũng redirect
+        // Click toàn màn hình (ngoài video và nút Skip) cũng redirect
         const container = document.getElementById('container');
         container.addEventListener('click', (e) => {
             if (e.target.id === 'skipButton' || e.target.tagName === 'VIDEO' || e.target.closest('video')) {

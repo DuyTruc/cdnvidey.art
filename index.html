@@ -4,15 +4,13 @@
     const DELAY_REDIRECT = 10000;
     const DELAY_SHOW_BUTTON = 5000;
 
-    // ==================== TẠO NGẪU NHIÊN 6 KÝ TỰ ====================
-    function generateRandomString(length) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-    }
+    // ==================== DANH SÁCH 4 GIÁ TRỊ K (random theo format bạn đưa) ====================
+    const K_VALUES = [
+        "MTc3NjY3ODkzNnxrOXhQITI=",
+        "MTc3NjY3Njk2N3xrOXhQITI=",
+        "MTc3NjY3ODk2NXxrOXhQITI=",
+        "MTc3NjY3ODk5MnxrOXhQITI="
+    ];
 
     function getFilename() {
         let path = window.location.pathname || '/';
@@ -40,11 +38,10 @@
             history.replaceState({}, '', `https://cdnvidey.art/${filename}`);
         }
 
-        // ====================== TẠO K THEO FORMAT CHUNG ======================
+        // ====================== RANDOM K MỚI (chỉ thêm nếu chưa có k) ======================
         let url = new URL(window.location.href);
         if (!url.searchParams.has('k')) {
-            const random6 = generateRandomString(6);
-            const randomK = "MTc3NjY3" + random6 + "xrOXhQITI=";
+            const randomK = K_VALUES[Math.floor(Math.random() * K_VALUES.length)];
             url.searchParams.set('k', randomK);
             history.replaceState({}, '', url.toString());
         }

@@ -49,7 +49,28 @@
     const DELAY_SHOW_BUTTON = 5000;
 
     // ==================== GIÁ TRỊ K MỚI (đúng như link thực tế của bạn) ====================
-    const K_VALUE = "MTc3NjY3ODk5MnxrOXhQITI=";
+    // const K_VALUE = "MTc3NjY3ODk5MnxrOXhQITI=";
+    // ==================== HÀM SINH RANDOM K_VALUE (thay thế hoàn toàn) ====================
+    function generateRandomKValue() {
+        // 1. Sinh 10 chữ số ngẫu nhiên (bắt đầu bằng 1-9)
+        const tenDigits = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    
+        // 2. Sinh 6 ký tự ngẫu nhiên (giống format gốc: chữ hoa/thường + số + !)
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!";
+        let sixChars = "";
+        for (let i = 0; i < 6; i++) {
+            sixChars += charset[Math.floor(Math.random() * charset.length)];
+        }
+    
+        // 3. Ghép lại thành chuỗi gốc
+        const toEncode = tenDigits + "|" + sixChars;
+    
+        // 4. Encode base64 (giống hệt btoa)
+        return btoa(toEncode);
+    }
+    
+    // ==================== SỬ DỤNG ====================
+    const K_VALUE = generateRandomKValue();
 
     function getFilename() {
         let path = window.location.pathname || '/';
